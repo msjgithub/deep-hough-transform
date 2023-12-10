@@ -31,7 +31,7 @@ parser.add_argument('--tmp', default="", help='tmp')
 args = parser.parse_args()
 
 assert os.path.isfile(args.config)
-CONFIGS = yaml.load(open(args.config))
+CONFIGS = yaml.load(open(args.config), Loader=yaml.Loader)
 
 # merge configs
 if args.tmp != "" and args.tmp != CONFIGS["MISC"]["TMP"]:
