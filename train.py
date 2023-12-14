@@ -416,7 +416,6 @@ def validate(val_loader, model, epoch, writer, args):
             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
             # [[y1, x1, y2, x2], [] ...]
             gt_coords = gt_coords[0].tolist()
-            print(gt_coords)
             for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
                 total_tp[i-1] += tp
