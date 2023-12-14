@@ -77,7 +77,7 @@ def main():
     # scheduler = lr_scheduler.MultiStepLR(optimizer,
     #                         milestones=CONFIGS["OPTIMIZER"]["STEPS"],
     #                         gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, threshold=0.01, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, threshold=0.01, verbose=True)
     best_acc1 = 0
     if args.resume:
         if isfile(args.resume):
@@ -462,7 +462,7 @@ def validate(val_loader, model, epoch, writer, args):
             logger.info('Validation result (Aligned): ==== F-measure@0.95: %.5f' % f_align[95 - 1])
             writer.add_scalar('val/f-measure', acc.mean(), epoch)
             writer.add_scalar('val/f-measure@0.95', f_align[95 - 1], epoch)
-    return acc.mean()
+    return acc.mean(),loss
 
 def save_checkpoint(state, is_best, path, filename='checkpoint.pth.tar'):
     torch.save(state, os.path.join(path, filename))
