@@ -11,11 +11,11 @@ DATA:
     LABEL_FILE: "data/training/train_1716_100_100.txt"
     VAL_LABEL_FILE: "data/training/test_1716_100_100.txt"
     TEST_LABEL_FILE: "data/training/test_1716_100_100.txt"
-    BATCH_SIZE: 8
+    BATCH_SIZE: 4
     WORKERS: 4
 
 OPTIMIZER:
-    LR: 2e-4
+    LR: 2e-2
     MOMENTUM: 0.9
     GAMMA: 0.1
     WEIGHT_DECAY: 0
