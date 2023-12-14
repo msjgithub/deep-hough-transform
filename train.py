@@ -77,7 +77,7 @@ def main():
     # scheduler = lr_scheduler.MultiStepLR(optimizer,
     #                         milestones=CONFIGS["OPTIMIZER"]["STEPS"],
     #                         gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, threshold=0.01, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, threshold=0.01, verbose=True)
     best_acc1 = 0
     if args.resume:
         if isfile(args.resume):
