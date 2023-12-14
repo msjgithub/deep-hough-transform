@@ -52,6 +52,10 @@ class Net(nn.Module):
             self.last_conv = nn.Sequential(
                 nn.Conv2d(512, 1, 1)
             )
+        self.con_p1 = nn.Conv2d(128, 1, 1)
+        self.con_p2 = nn.Conv2d(128, 1, 1)
+        self.con_p3 = nn.Conv2d(128, 1, 1)
+        self.con_p4 = nn.Conv2d(128, 1, 1)
 
         self.numAngle = numAngle
         self.numRho = numRho
@@ -76,7 +80,7 @@ class Net(nn.Module):
         # logist = self.last_conv(cat)
 
         # return logist
-        p1, p2, p3, p4, cat = self.sample_cat(p1, p2, p3, p4)
+        p1, p2, p3, p4, cat = self.upsample_cat(p1, p2, p3, p4)
         logist = self.last_conv(cat)
         p1 = self.con_p1(p1)
         p2 = self.con_p1(p2)
