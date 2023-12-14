@@ -22,6 +22,7 @@ from skimage.measure import label, regionprops
 from tensorboardX import SummaryWriter
 from utils import reverse_mapping, edge_align
 from hungarian_matching import caculate_tp_fp_fn
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 parser = argparse.ArgumentParser(description='PyTorch Semantic-Line Training')
 # arguments from command line
@@ -73,9 +74,10 @@ def main():
     )
 
     # learning rate scheduler
-    scheduler = lr_scheduler.MultiStepLR(optimizer,
-                            milestones=CONFIGS["OPTIMIZER"]["STEPS"],
-                            gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
+    # scheduler = lr_scheduler.MultiStepLR(optimizer,
+    #                         milestones=CONFIGS["OPTIMIZER"]["STEPS"],
+    #                         gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, threshold=0.01, verbose=True)
     best_acc1 = 0
     if args.resume:
         if isfile(args.resume):
@@ -119,9 +121,9 @@ def main():
     for epoch in range(start_epoch, CONFIGS["TRAIN"]["EPOCHS"]):
         
         train(train_loader, model, optimizer, epoch, writer, args)
-        acc = validate(val_loader, model, epoch, writer, args)
+        acc,loss = validate(val_loader, model, epoch, writer, args)
         #return
-        scheduler.step()
+        scheduler.step(loss)
 
         if best_acc < acc:
             is_best = True
