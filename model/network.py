@@ -61,7 +61,8 @@ class Net(nn.Module):
         p2 = nn.functional.interpolate(p2, size=(self.numAngle, self.numRho), mode='bilinear')
         p3 = nn.functional.interpolate(p3, size=(self.numAngle, self.numRho), mode='bilinear')
         p4 = nn.functional.interpolate(p4, size=(self.numAngle, self.numRho), mode='bilinear')
-        return torch.cat([p1, p2, p3, p4], dim=1)
+        # return torch.cat([p1, p2, p3, p4], dim=1)
+        return p1, p2, p3, p4,torch.cat([p1, p2, p3, p4], dim=1)
 
     def forward(self, x):
         p1, p2, p3, p4 = self.backbone(x)
@@ -71,7 +72,15 @@ class Net(nn.Module):
         p3 = self.dht_detector3(p3)
         p4 = self.dht_detector4(p4)
 
-        cat = self.upsample_cat(p1, p2, p3, p4)
-        logist = self.last_conv(cat)
+        # cat = self.upsample_cat(p1, p2, p3, p4)
+        # logist = self.last_conv(cat)
 
-        return logist
+        # return logist
+        p1, p2, p3, p4, cat = self.sample_cat(p1, p2, p3, p4)
+        logist = self.last_conv(cat)
+        p1 = self.con_p1(p1)
+        p2 = self.con_p1(p2)
+        p3 = self.con_p1(p3)
+        p4 = self.con_p1(p4)
+
+        return p1, p2, p3, p4,logist
