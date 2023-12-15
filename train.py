@@ -343,13 +343,10 @@ def train(train_loader, model, optimizer, epoch, writer, args):
         bar.set_description('Training Loss:{}'.format(loss.item()))
         
         # compute gradient and do SGD step
-        # optimizer.zero_grad()
-        # loss.backward()
-        # optimizer.step()
+        optimizer.zero_grad()
         loss.backward()
-        if counter == 5:
-            optimizer.step()
-            optimizer.zero_grad()
+        optimizer.step()
+     
         # ???????未打印
         if i % CONFIGS["TRAIN"]["PRINT_FREQ"] == 0:
             visualize_save_path = os.path.join(CONFIGS["MISC"]["TMP"], 'visualize', str(epoch))
