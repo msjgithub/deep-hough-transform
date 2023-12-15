@@ -128,6 +128,7 @@ def main():
         if best_acc < acc:
             is_best = True
             best_acc = acc
+            logger.info("best acc epoch %d." % (epoch+1))
         else:
             is_best = False
 
