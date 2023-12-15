@@ -313,6 +313,7 @@ def train(train_loader, model, optimizer, epoch, writer, args):
     iter_num = len(train_loader.dataset) // CONFIGS["DATA"]["BATCH_SIZE"]
 
     total_loss_hough = 0
+    counter = 0
     for i, data in enumerate(bar):
 
         images, hough_space_label, _, names = data
@@ -329,7 +330,7 @@ def train(train_loader, model, optimizer, epoch, writer, args):
         for out in keypoint_map:
             hough_space_loss = (hough_space_loss +
                                 torch.nn.functional.binary_cross_entropy_with_logits(out, hough_space_label))
-
+        counter += 1
         writer.add_scalar('train/hough_space_loss', hough_space_loss.item(), epoch * iter_num + i)
 
         loss = hough_space_loss
@@ -343,9 +344,13 @@ def train(train_loader, model, optimizer, epoch, writer, args):
         bar.set_description('Training Loss:{}'.format(loss.item()))
         
         # compute gradient and do SGD step
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
+        # loss.backward()
+        # optimizer.step()
         loss.backward()
-        optimizer.step()
+        if counter == 5:
+            optimizer.step()
+            optimizer.zero_grad()
         # ???????未打印
         if i % CONFIGS["TRAIN"]["PRINT_FREQ"] == 0:
             visualize_save_path = os.path.join(CONFIGS["MISC"]["TMP"], 'visualize', str(epoch))
