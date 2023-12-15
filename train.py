@@ -77,7 +77,7 @@ def main():
     # scheduler = lr_scheduler.MultiStepLR(optimizer,
     #                         milestones=CONFIGS["OPTIMIZER"]["STEPS"],
     #                         gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, threshold=0.01, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, threshold=0.01,cooldown=3, min_lr=2e-6, verbose=True)
     best_acc1 = 0
     if args.resume:
         if isfile(args.resume):
@@ -328,8 +328,7 @@ def train(train_loader, model, optimizer, epoch, writer, args):
         keypoint_map = model(images)
         hough_space_loss = torch.zeros(1).cuda()
         for out in keypoint_map:
-            hough_space_loss = (hough_space_loss +
-                                torch.nn.functional.binary_cross_entropy_with_logits(out, hough_space_label))
+            hough_space_loss = (hough_space_loss +focal_loss(out, hough_space_label))
         counter += 1
         writer.add_scalar('train/hough_space_loss', hough_space_loss.item(), epoch * iter_num + i)
 
@@ -396,8 +395,7 @@ def validate(val_loader, model, epoch, writer, args):
             keypoint_map = model(images)
             hough_space_loss = torch.zeros(1).cuda()
             for out in keypoint_map:
-                hough_space_loss = (hough_space_loss +
-                                    torch.nn.functional.binary_cross_entropy_with_logits(out, hough_space_label8))
+                hough_space_loss = (hough_space_loss +focal_loss(out, hough_space_label8))
 
             # hough_space_loss = torch.nn.functional.binary_cross_entropy_with_logits(keypoint_map, hough_space_label8)
             writer.add_scalar('val/hough_space_loss', hough_space_loss.item(), epoch * iter_num + i)
@@ -481,6 +479,13 @@ def save_checkpoint(state, is_best, path, filename='checkpoint.pth.tar'):
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+
+
+def focal_loss(logits, targets, alpha=0.25, gamma=2):
+    bce_loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, targets, reduction='none')
+    pt = torch.exp(-bce_loss)  # 计算预测的概率
+    focal_loss = alpha * (1 - pt)**gamma * bce_loss
+    return focal_loss.mean()
 
 
 
