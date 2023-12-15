@@ -406,8 +406,12 @@ def validate(val_loader, model, epoch, writer, args):
             else:
                 logger.info("Warnning: val loss is Nan.")
 
-            keypoint_map = keypoint_map[-1]
-            key_points = torch.sigmoid(keypoint_map)
+            # keypoint_map = keypoint_map[-1]
+            result_tensor = torch.zeros_like(keypoint_map[0])
+            for tensor in keypoint_map:
+                result_tensor += tensor
+            key_points = torch.sigmoid(result_tensor)
+            # key_points = torch.sigmoid(keypoint_map)
             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
             kmap_label = label(binary_kmap, connectivity=1)
             props = regionprops(kmap_label)
@@ -462,7 +466,7 @@ def validate(val_loader, model, epoch, writer, args):
             logger.info('Validation result (Aligned): ==== F-measure@0.95: %.5f' % f_align[95 - 1])
             writer.add_scalar('val/f-measure', acc.mean(), epoch)
             writer.add_scalar('val/f-measure@0.95', f_align[95 - 1], epoch)
-    return acc.mean(),loss
+    return acc.mean(),total_loss_hough
 
 def save_checkpoint(state, is_best, path, filename='checkpoint.pth.tar'):
     torch.save(state, os.path.join(path, filename))
