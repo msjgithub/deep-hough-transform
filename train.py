@@ -74,10 +74,10 @@ def main():
     )
 
     # learning rate scheduler
-    # scheduler = lr_scheduler.MultiStepLR(optimizer,
-    #                         milestones=CONFIGS["OPTIMIZER"]["STEPS"],
-    #                         gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, threshold=0.01,cooldown=3, min_lr=2e-6, verbose=True)
+    scheduler = lr_scheduler.MultiStepLR(optimizer,
+                            milestones=CONFIGS["OPTIMIZER"]["STEPS"],
+                            gamma=CONFIGS["OPTIMIZER"]["GAMMA"])
+    # scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, threshold=0.01,cooldown=3, min_lr=2e-6, verbose=True)
     best_acc1 = 0
     if args.resume:
         if isfile(args.resume):
@@ -123,7 +123,7 @@ def main():
         train(train_loader, model, optimizer, epoch, writer, args)
         acc,loss = validate(val_loader, model, epoch, writer, args)
         #return
-        scheduler.step(loss)
+        scheduler.step()
 
         if best_acc < acc:
             is_best = True
