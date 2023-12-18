@@ -439,12 +439,14 @@ def validate(val_loader, model, epoch, writer, args):
                     total_tp_align[i-1] += tp
                     total_fp_align[i-1] += fp
                     total_fn_align[i-1] += fn
+
             
         total_loss_hough = total_loss_hough / iter_num
         
         total_recall = total_tp / (total_tp + total_fn + 1e-8)
         total_precision = total_tp / (total_tp + total_fp + 1e-8)
         f = 2 * total_recall * total_precision / (total_recall + total_precision + 1e-8)
+        max_value, max_indices = find_max_value_and_position(f)
         
        
         writer.add_scalar('val/total_loss_hough', total_loss_hough, epoch)
@@ -454,6 +456,7 @@ def validate(val_loader, model, epoch, writer, args):
         acc = f.mean()
         logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
         logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[95 - 1])
+           logger.info(' max_value, max_indices : ==== %.5f,%.5f' % (max_value, max_indices))
         writer.add_scalar('val/f-measure', acc.mean(), epoch)
         writer.add_scalar('val/f-measure@0.95', f[95 - 1], epoch)
         
@@ -487,7 +490,10 @@ def focal_loss(logits, targets, alpha=0.25, gamma=2):
     focal_loss = alpha * (1 - pt)**gamma * bce_loss
     return focal_loss.mean()
 
-
+def find_max_value_and_position(lst):
+    max_value = max(lst)  # 获取列表中的最大值
+    max_index = [index for index, value in enumerate(lst) if value == max_value]  # 获取最大值的所有索引位置
+    return max_value, max_index
 
 class DayHourMinute(object):
   
