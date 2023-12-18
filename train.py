@@ -367,9 +367,9 @@ def validate(val_loader, model, epoch, writer, args):
     total_acc = 0.0
     total_loss_hough = 0
 
-    total_tp = np.zeros(99)
-    total_fp = np.zeros(99)
-    total_fn = np.zeros(99)
+    total_tp = np.zeros(59)
+    total_fp = np.zeros(59)
+    total_fn = np.zeros(59)
 
     total_tp_align = np.zeros(99)
     total_fp_align = np.zeros(99)
@@ -423,9 +423,12 @@ def validate(val_loader, model, epoch, writer, args):
             gt_coords = gt_coords[0].tolist()
             for i in range(40, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
-                total_tp[i-1] += tp
-                total_fp[i-1] += fp
-                total_fn[i-1] += fn
+                # total_tp[i-1] += tp
+                # total_fp[i-1] += fp
+                # total_fn[i-1] += fn
+                total_tp[i-40] += tp
+                total_fp[i-40] += fp
+                total_fn[i-40] += fn
 
             if CONFIGS["MODEL"]["EDGE_ALIGN"]:
                 for i in range(len(b_points)):
