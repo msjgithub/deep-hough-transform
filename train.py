@@ -455,7 +455,7 @@ def validate(val_loader, model, epoch, writer, args):
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision.mean(), total_recall.mean()))
         acc = f.mean()
         logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
-        logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[95 - 1])
+        logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[55 - 1])
            logger.info(' max_value, max_indices : ==== %.5f,%.5f' % (max_value, max_indices))
         writer.add_scalar('val/f-measure', acc.mean(), epoch)
         writer.add_scalar('val/f-measure@0.95', f[95 - 1], epoch)
@@ -469,7 +469,7 @@ def validate(val_loader, model, epoch, writer, args):
             logger.info('Validation result (Aligned): ==== Precision: %.5f, Recall: %.5f' % (total_precision_align.mean(), total_recall_align.mean()))
             acc = f_align.mean()
             logger.info('Validation result (Aligned): ==== F-measure: %.5f' % acc.mean())
-            logger.info('Validation result (Aligned): ==== F-measure@0.95: %.5f' % f_align[95 - 1])
+            logger.info('Validation result (Aligned): ==== F-measure@0.95: %.5f' % f_align[55 - 1])
             writer.add_scalar('val/f-measure', acc.mean(), epoch)
             writer.add_scalar('val/f-measure@0.95', f_align[95 - 1], epoch)
     return acc.mean(),total_loss_hough
