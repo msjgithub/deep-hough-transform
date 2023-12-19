@@ -458,7 +458,7 @@ def validate(val_loader, model, epoch, writer, args):
         logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[55 - 1])
         logger.info(' max_value, max_indices : ==== %.5f,%.5f' % (max_value, max_indices))
         writer.add_scalar('val/f-measure', acc.mean(), epoch)
-        writer.add_scalar('val/f-measure@0.95', f[95 - 1], epoch)
+        writer.add_scalar('val/f-measure@0.95', f[55 - 1], epoch)
         
         if CONFIGS["MODEL"]["EDGE_ALIGN"]:
             total_recall_align = total_tp_align / (total_tp_align + total_fn_align + 1e-8)
