@@ -367,9 +367,9 @@ def validate(val_loader, model, epoch, writer, args):
     total_acc = 0.0
     total_loss_hough = 0
 
-    total_tp = np.zeros(59)
-    total_fp = np.zeros(59)
-    total_fn = np.zeros(59)
+    total_tp = np.zeros(99)
+    total_fp = np.zeros(99)
+    total_fn = np.zeros(99)
 
     total_tp_align = np.zeros(99)
     total_fp_align = np.zeros(99)
@@ -421,7 +421,7 @@ def validate(val_loader, model, epoch, writer, args):
             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
             # [[y1, x1, y2, x2], [] ...]
             gt_coords = gt_coords[0].tolist()
-            for i in range(1, 60):
+            for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
                 total_tp[i-1] += tp
                 total_fp[i-1] += fp
@@ -455,11 +455,11 @@ def validate(val_loader, model, epoch, writer, args):
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision.mean(), total_recall.mean()))
         acc = f.mean()
         logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
-        logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[55 - 1])
+        logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[95 - 1])
         logger.info(' max_value, max_indices : ==== %d' % max_value)
         logger.info(' max_value, max_indices : ==== %s' % max_indices)
         writer.add_scalar('val/f-measure', acc.mean(), epoch)
-        writer.add_scalar('val/f-measure@0.95', f[55 - 1], epoch)
+        writer.add_scalar('val/f-measure@0.95', f[95 - 1], epoch)
         
         if CONFIGS["MODEL"]["EDGE_ALIGN"]:
             total_recall_align = total_tp_align / (total_tp_align + total_fn_align + 1e-8)
