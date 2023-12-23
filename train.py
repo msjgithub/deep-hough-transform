@@ -462,7 +462,6 @@ def validate(val_loader, model, epoch, writer, args):
                 plist.append(prop.centroid)
             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
             # [[y1, x1, y2, x2], [] ...]
-            gt_coords = gt_coords[0].tolist()
             for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
                 total_tp2[i-1] += tp
@@ -480,7 +479,6 @@ def validate(val_loader, model, epoch, writer, args):
                 plist.append(prop.centroid)
             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
             # [[y1, x1, y2, x2], [] ...]
-            gt_coords = gt_coords[0].tolist()
             for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
                 total_tp3[i-1] += tp
@@ -498,7 +496,6 @@ def validate(val_loader, model, epoch, writer, args):
                 plist.append(prop.centroid)
             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
             # [[y1, x1, y2, x2], [] ...]
-            gt_coords = gt_coords[0].tolist()
             for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
                 total_tp4[i-1] += tp
@@ -515,7 +512,6 @@ def validate(val_loader, model, epoch, writer, args):
                 plist.append(prop.centroid)
             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
             # [[y1, x1, y2, x2], [] ...]
-            gt_coords = gt_coords[0].tolist()
             for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
                 total_tp5[i-1] += tp
@@ -529,7 +525,7 @@ def validate(val_loader, model, epoch, writer, args):
         
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[0].mean(), total_recall[0].mean()))
         acc = f[0].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
+        logger.info('Validation result: ==== F-measure: %.5f' % acc)
 
 # 1
         total_recall[1] = total_tp2 / (total_tp2 + total_fn2 + 1e-8)
@@ -539,7 +535,7 @@ def validate(val_loader, model, epoch, writer, args):
         
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[1].mean(), total_recall[1].mean()))
         acc = f[1].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
+        logger.info('Validation result: ==== F-measure: %.5f' % acc)
 
         # 2
         total_recall[2] = total_tp3 / (total_tp3 + total_fn3 + 1e-8)
@@ -549,7 +545,7 @@ def validate(val_loader, model, epoch, writer, args):
         
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[2].mean(), total_recall[2].mean()))
         acc = f[2].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
+        logger.info('Validation result: ==== F-measure: %.5f' % acc)
 # 3
         total_recall[3] = total_tp4 / (total_tp4 + total_fn4 + 1e-8)
         total_precision[3] = total_tp4 / (total_tp4 + total_fp4 + 1e-8)
@@ -558,7 +554,7 @@ def validate(val_loader, model, epoch, writer, args):
         
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[3].mean(), total_recall[3].mean()))
         acc = f[3].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc.mean
+        logger.info('Validation result: ==== F-measure: %.5f' % acc）
 
 # 4
         total_recall[4] = total_tp5 / (total_tp5 + total_fn5 + 1e-8)
@@ -568,7 +564,7 @@ def validate(val_loader, model, epoch, writer, args):
         
         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[4].mean(), total_recall[4].mean()))
         acc = f[4].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
+        logger.info('Validation result: ==== F-measure: %.5f' % acc)
 
     
 
