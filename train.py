@@ -435,7 +435,7 @@ def validate(val_loader, model, epoch, writer, args):
         acc = f.mean()
         logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
         logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[95-1])
-        logger.info(' max_value, max_indices : ==== %d' % max_value)
+        logger.info(' max_value, max_indices : ==== %f' % max_value)
         logger.info(' max_value, max_indices : ==== %s' % max_indices)
 
         
