@@ -151,12 +151,16 @@ class MobileNetV3_Large(nn.Module):
         )
 
         self.toplayer = nn.Conv2d(112, 24, kernel_size=1, stride=1, padding=0)
-        self.latlayer1 = nn.Conv2d(40, 24, kernel_size=1, stride=1, padding=0)
-        self.latlayer2 = nn.Conv2d(24, 24, kernel_size=1, stride=1, padding=0)
-        self.latlayer3 = nn.Conv2d(16, 24, kernel_size=1, stride=1, padding=0)
+        self.latlayer1 = nn.Conv2d(24, 24, kernel_size=1, stride=1, padding=0)
+        self.latlayer2 = nn.Conv2d(40, 24, kernel_size=1, stride=1, padding=0)
+        self.latlayer3 = nn.Conv2d(112, 24, kernel_size=1, stride=1, padding=0)
+        self.latlayer4 = nn.Conv2d(160, 24, kernel_size=1, stride=1, padding=0)
+
         self.smooth1 = nn.Conv2d(24, 24, kernel_size=3, stride=1, padding=1)
         self.smooth2 = nn.Conv2d(24, 24, kernel_size=3, stride=1, padding=1)
-        self.smooth = nn.Conv2d(24, 24, kernel_size=3, stride=1, padding=1)
+        self.smooth3 = nn.Conv2d(24, 24, kernel_size=3, stride=1, padding=1)
+
+
 
         self.dht_detector1 = DHT_Layer(24, 32, numAngle=self.numAngle, numRho=self.numRho)
         self.dht_detector2 = DHT_Layer(24, 32, numAngle=self.numAngle, numRho=self.numRho // 2)
@@ -212,33 +216,39 @@ class MobileNetV3_Large(nn.Module):
         out1 = self.bneck1(out)
         out2 = self.bneck2(out1)
         out3 = self.bneck3(out2)
-        # out4 = self.bneck4(out3)
+        out4 = self.bneck4(out3)
 
-        out3 = self.toplayer(out3)
-        out2 = nn.functional.upsample(out3, size=out2.size()[2:], mode='bilinear') + self.latlayer1(out2)
-        out1 = nn.functional.upsample(out2, size=out1.size()[2:], mode='bilinear') + self.latlayer2(out1)
-        out = nn.functional.upsample(out1, size=out.size()[2:], mode='bilinear') + self.latlayer3(out)
+        # out3 = self.toplayer(out3)
+        # out2 = nn.functional.upsample(out3, size=out2.size()[2:], mode='bilinear') + self.latlayer1(out2)
+        # out1 = nn.functional.upsample(out2, size=out1.size()[2:], mode='bilinear') + self.latlayer2(out1)
+        # out = nn.functional.upsample(out1, size=out.size()[2:], mode='bilinear') + self.latlayer3(out)
+        out4 = self.latlayer4(out4)
+        out3 = nn.functional.upsample(out4, size=out3.size()[2:], mode='bilinear') + self.latlayer3(out3)
+        out2 = nn.functional.upsample(out3, size=out2.size()[2:], mode='bilinear') + self.latlayer2(out2)
+        out1 = nn.functional.upsample(out2, size=out1.size()[2:], mode='bilinear') + self.latlayer1(out1)
 
-        out = self.smooth(out)
+
         out1 = self.smooth1(out1)
         out2 = self.smooth2(out2)
+        out3 = self.smooth3(out3)
 
-        p1 = self.dht_detector1(out)
-        p2 = self.dht_detector2(out1)
-        p3 = self.dht_detector3(out2)
-        p4 = self.dht_detector4(out3)
+
+        p1 = self.dht_detector2(out1)
+        p2 = self.dht_detector3(out2)
+        p3 = self.dht_detector4(out3)
+        p4 = self.dht_detector1(out4)
 
         p1, p2, p3, p4 = self.sample_cat(p1, p2, p3, p4)
 
 
         p1 = self.con_p1(p1)
-        p2 = self.con_p1(p2)
-        p3 = self.con_p1(p3)
-        p4 = self.con_p1(p4)
+        p2 = self.con_p2(p2)
+        p3 = self.con_p3(p3)
+        p4 = self.con_p4(p4)
 
         return p1, p2, p3, p4
 
-#
-# model = MobileNetV3_Large(100,100)
-# # print(model)
-# summary(model,(3,224,224))
+
+model = MobileNetV3_Large(100,100)
+# print(model)
+summary(model,(3,224,224))
