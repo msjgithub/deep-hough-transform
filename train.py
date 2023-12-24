@@ -18,7 +18,7 @@ from logger import Logger
 
 from dataloader import get_loader
 # from model.network import Net
-from model.nettest import MobileNetV3_Large
+from model.mobilenetva import MobileNetV3_Large
 from skimage.measure import label, regionprops
 from tensorboardX import SummaryWriter
 from utils import reverse_mapping, edge_align
