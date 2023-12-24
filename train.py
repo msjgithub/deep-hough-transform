@@ -327,8 +327,8 @@ def train(train_loader, model, optimizer, epoch, writer, args):
             
         keypoint_map = model(images)
         hough_space_loss = torch.zeros(1).cuda()
-        for out in keypoint_map:
-            hough_space_loss = (hough_space_loss +focal_loss(out, hough_space_label))
+        for i,out in enumerate(keypoint_map):
+            hough_space_loss = (hough_space_loss +(i+1)*0.1*focal_loss(out, hough_space_label))
         counter += 1
         writer.add_scalar('train/hough_space_loss', hough_space_loss.item(), epoch * iter_num + i)
 
@@ -403,8 +403,8 @@ def validate(val_loader, model, epoch, writer, args):
                 logger.info("Warnning: val loss is Nan.")
 
             result_tensor = torch.zeros_like(keypoint_map[0])
-            for tensor in keypoint_map:
-                result_tensor += tensor
+            for i,tensor in enumerate(keypoint_map):
+                result_tensor += (i+1)*0.1*tensor
             key_points = torch.sigmoid(result_tensor)
             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
             kmap_label = label(binary_kmap, connectivity=1)
