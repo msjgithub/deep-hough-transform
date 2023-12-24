@@ -60,7 +60,7 @@ def main():
         cudnn.deterministic = True
 
     # model = Net(numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], backbone=CONFIGS["MODEL"]["BACKBONE"])
-     model = MobileNetV3_Large(CONFIGS["MODEL"]["NUMANGLE"], CONFIGS["MODEL"]["NUMRHO"])
+    model = MobileNetV3_Large(CONFIGS["MODEL"]["NUMANGLE"], CONFIGS["MODEL"]["NUMRHO"])
     if CONFIGS["TRAIN"]["DATA_PARALLEL"]:
         logger.info("Model Data Parallel")
         model = nn.DataParallel(model).cuda()
