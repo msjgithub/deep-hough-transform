@@ -358,38 +358,17 @@ def train(train_loader, model, optimizer, epoch, writer, args):
 
     total_loss_hough = total_loss_hough / iter_num
     writer.add_scalar('train/total_loss_hough', total_loss_hough, epoch)
- 
 
-    
+
 def validate(val_loader, model, epoch, writer, args):
     # switch to evaluate mode
     model.eval()
     total_acc = 0.0
     total_loss_hough = 0
 
-    total_tp1 = np.zeros(99)
-    total_fp1 = np.zeros(99)
-    total_fn1 = np.zeros(99)
-
-    total_tp2 = np.zeros(99)
-    total_fp2 = np.zeros(99)
-    total_fn2 = np.zeros(99)
-
-    total_tp3 = np.zeros(99)
-    total_fp3 = np.zeros(99)
-    total_fn3 = np.zeros(99)
-
-    total_tp4 = np.zeros(99)
-    total_fp4 = np.zeros(99)
-    total_fn4 = np.zeros(99)
-
-    total_tp5 = np.zeros(99)
-    total_fp5 = np.zeros(99)
-    total_fn5 = np.zeros(99)
-
-    total_recall = np.zeros(4)
-    total_precision = np.zeros(4)
-    f = np.zeros(4)
+    total_tp = np.zeros(99)
+    total_fp = np.zeros(99)
+    total_fn = np.zeros(99)
 
     total_tp_align = np.zeros(99)
     total_fp_align = np.zeros(99)
@@ -409,13 +388,10 @@ def validate(val_loader, model, epoch, writer, args):
                 images = images.cuda(device=CONFIGS["TRAIN"]["GPU_ID"])
                 hough_space_label8 = hough_space_label8.cuda(device=CONFIGS["TRAIN"]["GPU_ID"])
                 
-            p1,p2,p3,p4,p5 = model(images)
+            keypoint_map = model(images)
             hough_space_loss = torch.zeros(1).cuda()
-            # for out in keypoint_map:
-            #     hough_space_loss = (hough_space_loss +focal_loss(out, hough_space_label8))
-
-            # hough_space_loss = torch.nn.functional.binary_cross_entropy_with_logits(keypoint_map, hough_space_label8)
-            writer.add_scalar('val/hough_space_loss', hough_space_loss.item(), epoch * iter_num + i)
+            for out in keypoint_map:
+                hough_space_loss = (hough_space_loss +focal_loss(out, hough_space_label8))
 
             acc = 0
             total_acc += acc
@@ -426,14 +402,10 @@ def validate(val_loader, model, epoch, writer, args):
             else:
                 logger.info("Warnning: val loss is Nan.")
 
-            # keypoint_map = keypoint_map[-1]
-            
-            # result_tensor = torch.zeros_like(keypoint_map[0])
-            # for tensor in keypoint_map:
-            #     result_tensor += tensor
-            
-            key_points = torch.sigmoid(p1)
-            # key_points = torch.sigmoid(keypoint_map)
+            result_tensor = torch.zeros_like(keypoint_map[0])
+            for tensor in keypoint_map:
+                result_tensor += tensor
+            key_points = torch.sigmoid(result_tensor)
             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
             kmap_label = label(binary_kmap, connectivity=1)
             props = regionprops(kmap_label)
@@ -445,134 +417,222 @@ def validate(val_loader, model, epoch, writer, args):
             gt_coords = gt_coords[0].tolist()
             for i in range(1, 100):
                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
-                total_tp1[i-1] += tp
-                total_fp1[i-1] += fp
-                total_fn1[i-1] += fn
+                total_tp[i-1] += tp
+                total_fp[i-1] += fp
+                total_fn[i-1] += fn
 
 
-
-
-            key_points = torch.sigmoid(p2)
-            # key_points = torch.sigmoid(keypoint_map)
-            binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
-            kmap_label = label(binary_kmap, connectivity=1)
-            props = regionprops(kmap_label)
-            plist = []
-            for prop in props:
-                plist.append(prop.centroid)
-            b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
-            # [[y1, x1, y2, x2], [] ...]
-            for i in range(1, 100):
-                tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
-                total_tp2[i-1] += tp
-                total_fp2[i-1] += fp
-                total_fn2[i-1] += fn
-
-
-            key_points = torch.sigmoid(p3)
-            # key_points = torch.sigmoid(keypoint_map)
-            binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
-            kmap_label = label(binary_kmap, connectivity=1)
-            props = regionprops(kmap_label)
-            plist = []
-            for prop in props:
-                plist.append(prop.centroid)
-            b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
-            # [[y1, x1, y2, x2], [] ...]
-            for i in range(1, 100):
-                tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
-                total_tp3[i-1] += tp
-                total_fp3[i-1] += fp
-                total_fn3[i-1] += fn
-
-
-            key_points = torch.sigmoid(p4)
-            # key_points = torch.sigmoid(keypoint_map)
-            binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
-            kmap_label = label(binary_kmap, connectivity=1)
-            props = regionprops(kmap_label)
-            plist = []
-            for prop in props:
-                plist.append(prop.centroid)
-            b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
-            # [[y1, x1, y2, x2], [] ...]
-            for i in range(1, 100):
-                tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
-                total_tp4[i-1] += tp
-                total_fp4[i-1] += fp
-                total_fn4[i-1] += fn
-
-            key_points = torch.sigmoid(p5)
-            # key_points = torch.sigmoid(keypoint_map)
-            binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
-            kmap_label = label(binary_kmap, connectivity=1)
-            props = regionprops(kmap_label)
-            plist = []
-            for prop in props:
-                plist.append(prop.centroid)
-            b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
-            # [[y1, x1, y2, x2], [] ...]
-            for i in range(1, 100):
-                tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
-                total_tp5[i-1] += tp
-                total_fp5[i-1] += fp
-                total_fn5[i-1] += fn
-
-        # 0
-        total_recall[0] = total_tp1 / (total_tp1 + total_fn1 + 1e-8)
-        total_precision[0] = total_tp1 / (total_tp1 + total_fp1 + 1e-8)
-        f[0] = 2 * total_recall[0] * total_precision[0] / (total_recall[0] + total_precision[0] + 1e-8)
+        total_loss_hough = total_loss_hough / iter_num
         
-        logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[0].mean(), total_recall[0].mean()))
-        acc = f[0].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc)
-
-# 1
-        total_recall[1] = total_tp2 / (total_tp2 + total_fn2 + 1e-8)
-        total_precision[1] = total_tp2 / (total_tp2 + total_fp2 + 1e-8)
-        f[1] = 2 * total_recall[1] * total_precision[1] / (total_recall[1] + total_precision[1] + 1e-8)
-
+        total_recall = total_tp / (total_tp + total_fn + 1e-8)
+        total_precision = total_tp / (total_tp + total_fp + 1e-8)
+        f = 2 * total_recall * total_precision / (total_recall + total_precision + 1e-8)
+        max_value, max_indices = find_max_value_and_position(f)
         
-        logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[1].mean(), total_recall[1].mean()))
-        acc = f[1].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc)
+       
+        logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision.mean(), total_recall.mean()))
+        acc = f.mean()
+        logger.info('Validation result: ==== F-measure: %.5f' % acc.mean())
+        logger.info('Validation result: ==== F-measure@0.95: %.5f' % f[95-1])
+        logger.info(' max_value, max_indices : ==== %d' % max_value)
+        logger.info(' max_value, max_indices : ==== %s' % max_indices)
 
-        # 2
-        total_recall[2] = total_tp3 / (total_tp3 + total_fn3 + 1e-8)
-        total_precision[2] = total_tp3 / (total_tp3 + total_fp3 + 1e-8)
-        f[2] = 2 * total_recall[2] * total_precision[2] / (total_recall[2] + total_precision[2] + 1e-8)
-
-        
-        logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[2].mean(), total_recall[2].mean()))
-        acc = f[2].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc)
-# 3
-        total_recall[3] = total_tp4 / (total_tp4 + total_fn4 + 1e-8)
-        total_precision[3] = total_tp4 / (total_tp4 + total_fp4 + 1e-8)
-        f[3] = 2 * total_recall[3] * total_precision[3] / (total_recall[3] + total_precision[3] + 1e-8)
-
-        
-        logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[3].mean(), total_recall[3].mean()))
-        acc = f[3].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc）
-
-# 4
-        total_recall[4] = total_tp5 / (total_tp5 + total_fn5 + 1e-8)
-        total_precision[4] = total_tp5 / (total_tp5 + total_fp5 + 1e-8)
-        f[4] = 2 * total_recall[4] * total_precision[4] / (total_recall[4] + total_precision[4] + 1e-8)
-
-        
-        logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[4].mean(), total_recall[4].mean()))
-        acc = f[4].mean()
-        logger.info('Validation result: ==== F-measure: %.5f' % acc)
-
-    
-
-
-
-    
         
     return acc.mean(),total_loss_hough
+
+ 
+
+    
+# def validate(val_loader, model, epoch, writer, args):
+#     # switch to evaluate mode
+#     model.eval()
+#     total_acc = 0.0
+#     total_loss_hough = 0
+#     total_tp = np.zeros(99)
+#     total_fp = np.zeros(99)
+#     total_fn = np.zeros(99)
+
+#     # total_tp1 = np.zeros(99)
+#     # total_fp1 = np.zeros(99)
+#     # total_fn1 = np.zeros(99)
+
+#     # total_tp2 = np.zeros(99)
+#     # total_fp2 = np.zeros(99)
+#     # total_fn2 = np.zeros(99)
+
+#     # total_tp3 = np.zeros(99)
+#     # total_fp3 = np.zeros(99)
+#     # total_fn3 = np.zeros(99)
+
+#     # total_tp4 = np.zeros(99)
+#     # total_fp4 = np.zeros(99)
+#     # total_fn4 = np.zeros(99)
+
+#     # total_tp5 = np.zeros(99)
+#     # total_fp5 = np.zeros(99)
+#     # total_fn5 = np.zeros(99)
+
+#     # total_tp_align = np.zeros(99)
+#     # total_fp_align = np.zeros(99)
+#     # total_fn_align = np.zeros(99)
+
+#     with torch.no_grad():
+#         bar = tqdm.tqdm(val_loader)
+#         iter_num = len(val_loader.dataset) // 1
+#         for i, data in enumerate(bar):
+
+#             images, hough_space_label8, gt_coords, names = data
+
+#             if CONFIGS["TRAIN"]["DATA_PARALLEL"]:
+#                 images = images.cuda()
+#                 hough_space_label8 = hough_space_label8.cuda()
+#             else:
+#                 images = images.cuda(device=CONFIGS["TRAIN"]["GPU_ID"])
+#                 hough_space_label8 = hough_space_label8.cuda(device=CONFIGS["TRAIN"]["GPU_ID"])
+                
+#             # p1,p2,p3,p4= model(images)
+#             keypoint_map= model(images)
+#             hough_space_loss = torch.zeros(1).cuda()
+#             # keypoint_map = keypoint_map[-1]
+#             result_tensor = torch.zeros_like(keypoint_map[0])
+#             for tensor in keypoint_map:
+#                 result_tensor += tensor
+            
+#             key_points = torch.sigmoid(p1)
+#             # key_points = torch.sigmoid(keypoint_map)
+#             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
+#             kmap_label = label(binary_kmap, connectivity=1)
+#             props = regionprops(kmap_label)
+#             plist = []
+#             for prop in props:
+#                 plist.append(prop.centroid)
+#             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
+#             # [[y1, x1, y2, x2], [] ...]
+#             gt_coords = gt_coords[0].tolist()
+#             for i in range(1, 100):
+#                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
+#                 total_tp1[i-1] += tp
+#                 total_fp1[i-1] += fp
+#                 total_fn1[i-1] += fn
+
+
+
+
+#             key_points = torch.sigmoid(p2)
+#             # key_points = torch.sigmoid(keypoint_map)
+#             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
+#             kmap_label = label(binary_kmap, connectivity=1)
+#             props = regionprops(kmap_label)
+#             plist = []
+#             for prop in props:
+#                 plist.append(prop.centroid)
+#             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
+#             # [[y1, x1, y2, x2], [] ...]
+#             for i in range(1, 100):
+#                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
+#                 total_tp2[i-1] += tp
+#                 total_fp2[i-1] += fp
+#                 total_fn2[i-1] += fn
+
+
+#             key_points = torch.sigmoid(p3)
+#             # key_points = torch.sigmoid(keypoint_map)
+#             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
+#             kmap_label = label(binary_kmap, connectivity=1)
+#             props = regionprops(kmap_label)
+#             plist = []
+#             for prop in props:
+#                 plist.append(prop.centroid)
+#             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
+#             # [[y1, x1, y2, x2], [] ...]
+#             for i in range(1, 100):
+#                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
+#                 total_tp3[i-1] += tp
+#                 total_fp3[i-1] += fp
+#                 total_fn3[i-1] += fn
+
+
+#             key_points = torch.sigmoid(p4)
+#             # key_points = torch.sigmoid(keypoint_map)
+#             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
+#             kmap_label = label(binary_kmap, connectivity=1)
+#             props = regionprops(kmap_label)
+#             plist = []
+#             for prop in props:
+#                 plist.append(prop.centroid)
+#             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
+#             # [[y1, x1, y2, x2], [] ...]
+#             for i in range(1, 100):
+#                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
+#                 total_tp4[i-1] += tp
+#                 total_fp4[i-1] += fp
+#                 total_fn4[i-1] += fn
+
+#             key_points = torch.sigmoid(p5)
+#             # key_points = torch.sigmoid(keypoint_map)
+#             binary_kmap = key_points.squeeze().cpu().numpy() > CONFIGS['MODEL']['THRESHOLD']
+#             kmap_label = label(binary_kmap, connectivity=1)
+#             props = regionprops(kmap_label)
+#             plist = []
+#             for prop in props:
+#                 plist.append(prop.centroid)
+#             b_points = reverse_mapping(plist, numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], size=(400, 400))
+#             # [[y1, x1, y2, x2], [] ...]
+#             for i in range(1, 100):
+#                 tp, fp, fn = caculate_tp_fp_fn(b_points, gt_coords, thresh=i*0.01)
+#                 total_tp5[i-1] += tp
+#                 total_fp5[i-1] += fp
+#                 total_fn5[i-1] += fn
+
+#         # 0
+#         total_recall[0] = total_tp1 / (total_tp1 + total_fn1 + 1e-8)
+#         total_precision[0] = total_tp1 / (total_tp1 + total_fp1 + 1e-8)
+#         f[0] = 2 * total_recall[0] * total_precision[0] / (total_recall[0] + total_precision[0] + 1e-8)
+        
+#         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[0].mean(), total_recall[0].mean()))
+#         acc = f[0].mean()
+#         logger.info('Validation result: ==== F-measure: %.5f' % acc)
+
+# # 1
+#         total_recall[1] = total_tp2 / (total_tp2 + total_fn2 + 1e-8)
+#         total_precision[1] = total_tp2 / (total_tp2 + total_fp2 + 1e-8)
+#         f[1] = 2 * total_recall[1] * total_precision[1] / (total_recall[1] + total_precision[1] + 1e-8)
+
+        
+#         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[1].mean(), total_recall[1].mean()))
+#         acc = f[1].mean()
+#         logger.info('Validation result: ==== F-measure: %.5f' % acc)
+
+#         # 2
+#         total_recall[2] = total_tp3 / (total_tp3 + total_fn3 + 1e-8)
+#         total_precision[2] = total_tp3 / (total_tp3 + total_fp3 + 1e-8)
+#         f[2] = 2 * total_recall[2] * total_precision[2] / (total_recall[2] + total_precision[2] + 1e-8)
+
+        
+#         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[2].mean(), total_recall[2].mean()))
+#         acc = f[2].mean()
+#         logger.info('Validation result: ==== F-measure: %.5f' % acc)
+# # 3
+#         total_recall[3] = total_tp4 / (total_tp4 + total_fn4 + 1e-8)
+#         total_precision[3] = total_tp4 / (total_tp4 + total_fp4 + 1e-8)
+#         f[3] = 2 * total_recall[3] * total_precision[3] / (total_recall[3] + total_precision[3] + 1e-8)
+
+        
+#         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[3].mean(), total_recall[3].mean()))
+#         acc = f[3].mean()
+#         logger.info('Validation result: ==== F-measure: %.5f' % acc）
+
+# # 4
+#         total_recall[4] = total_tp5 / (total_tp5 + total_fn5 + 1e-8)
+#         total_precision[4] = total_tp5 / (total_tp5 + total_fp5 + 1e-8)
+#         f[4] = 2 * total_recall[4] * total_precision[4] / (total_recall[4] + total_precision[4] + 1e-8)
+
+        
+#         logger.info('Validation result: ==== Precision: %.5f, Recall: %.5f' % (total_precision[4].mean(), total_recall[4].mean()))
+#         acc = f[4].mean()
+#         logger.info('Validation result: ==== F-measure: %.5f' % acc)
+
+#     return acc.mean(),total_loss_hough
 
 def save_checkpoint(state, is_best, path, filename='checkpoint.pth.tar'):
     torch.save(state, os.path.join(path, filename))
