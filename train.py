@@ -17,7 +17,8 @@ from torch.optim import lr_scheduler
 from logger import Logger
 
 from dataloader import get_loader
-from model.network import Net
+# from model.network import Net
+from model.nettest import MobileNetV3_Large
 from skimage.measure import label, regionprops
 from tensorboardX import SummaryWriter
 from utils import reverse_mapping, edge_align
@@ -58,8 +59,8 @@ def main():
         torch.manual_seed(CONFIGS['TRAIN']['SEED'])
         cudnn.deterministic = True
 
-    model = Net(numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], backbone=CONFIGS["MODEL"]["BACKBONE"])
-    
+    # model = Net(numAngle=CONFIGS["MODEL"]["NUMANGLE"], numRho=CONFIGS["MODEL"]["NUMRHO"], backbone=CONFIGS["MODEL"]["BACKBONE"])
+     model = MobileNetV3_Large(CONFIGS["MODEL"]["NUMANGLE"], CONFIGS["MODEL"]["NUMRHO"])
     if CONFIGS["TRAIN"]["DATA_PARALLEL"]:
         logger.info("Model Data Parallel")
         model = nn.DataParallel(model).cuda()
