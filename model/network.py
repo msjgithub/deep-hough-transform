@@ -55,6 +55,7 @@ class Net(nn.Module):
 
         self.numAngle = numAngle
         self.numRho = numRho
+        a=c
 
     def upsample_cat(self, p1, p2, p3, p4):
         p1 = nn.functional.interpolate(p1, size=(self.numAngle, self.numRho), mode='bilinear')
